@@ -315,6 +315,7 @@ impl<I: Image> From<(I, I::Args)> for RunnableImage<I> {
             ports: None,
             privileged: false,
             shm_size: None,
+            user: None,
         }
     }
 }
