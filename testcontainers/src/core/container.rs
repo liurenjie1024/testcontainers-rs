@@ -191,6 +191,7 @@ where
             .or(settings.bridge)
             .unwrap_or("bridge".to_string());
 
+        log::debug!("Bridge name for {} is {bridge_name}", self.id);
         let ip = networks
             .remove(&bridge_name)
             .and_then(|network| network.ip_address)
