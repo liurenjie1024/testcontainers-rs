@@ -186,7 +186,7 @@ where
             .network()
             .clone()
             .or(settings.bridge)
-            .unwrap_or_else(|| panic!("container {} has missing bridge name", self.id));
+            .unwrap_or("bridge".to_string());
 
         let ip = networks
             .remove(&bridge_name)
