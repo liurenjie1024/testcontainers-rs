@@ -11,9 +11,9 @@ use super::ports::Ports;
 /// [`Image`]: trait.Image.html
 /// [docker_run]: trait.Docker.html#tymethod.run
 pub trait Image
-where
-    Self: Sized,
-    Self::Args: ImageArgs + Clone + Debug,
+    where
+        Self: Sized,
+        Self::Args: ImageArgs + Clone + Debug,
 {
     /// A type representing the arguments for an Image.
     ///
@@ -55,7 +55,7 @@ where
     /// users will either go with the default ones or just override one or two. When defining
     /// the environment variables of your image, consider that the whole purpose is to facilitate integration
     /// testing. Only expose those that actually make sense for this case.
-    fn env_vars(&self) -> Box<dyn Iterator<Item = (&String, &String)> + '_> {
+    fn env_vars(&self) -> Box<dyn Iterator<Item=(&String, &String)> + '_> {
         Box::new(std::iter::empty())
     }
 
@@ -67,7 +67,7 @@ where
     /// users will either go with the default ones or just override one or two. When defining
     /// the volumes of your image, consider that the whole purpose is to facilitate integration
     /// testing. Only expose those that actually make sense for this case.
-    fn volumes(&self) -> Box<dyn Iterator<Item = (&String, &String)> + '_> {
+    fn volumes(&self) -> Box<dyn Iterator<Item=(&String, &String)> + '_> {
         Box::new(std::iter::empty())
     }
 
@@ -114,8 +114,8 @@ impl ContainerState {
     }
 
     #[deprecated(
-        since = "0.13.1",
-        note = "Use `host_port_ipv4()` or `host_port_ipv6()` instead."
+    since = "0.13.1",
+    note = "Use `host_port_ipv4()` or `host_port_ipv6()` instead."
     )]
     pub fn host_port(&self, internal_port: u16) -> u16 {
         self.host_port_ipv4(internal_port)
@@ -124,22 +124,22 @@ impl ContainerState {
     pub fn host_port_ipv4(&self, internal_port: u16) -> u16 {
         self.ports
             .map_to_host_port_ipv4(internal_port)
-            .unwrap_or_else(|| panic!("Container does not have a mapped port for {internal_port}",))
+            .unwrap_or_else(|| panic!("Container does not have a mapped port for {internal_port}", ))
     }
 
     pub fn host_port_ipv6(&self, internal_port: u16) -> u16 {
         self.ports
             .map_to_host_port_ipv6(internal_port)
-            .unwrap_or_else(|| panic!("Container does not have a mapped port for {internal_port}",))
+            .unwrap_or_else(|| panic!("Container does not have a mapped port for {internal_port}", ))
     }
 }
 
 pub trait ImageArgs {
-    fn into_iterator(self) -> Box<dyn Iterator<Item = String>>;
+    fn into_iterator(self) -> Box<dyn Iterator<Item=String>>;
 }
 
 impl ImageArgs for () {
-    fn into_iterator(self) -> Box<dyn Iterator<Item = String>> {
+    fn into_iterator(self) -> Box<dyn Iterator<Item=String>> {
         Box::new(vec![].into_iter())
     }
 }
@@ -157,6 +157,7 @@ pub struct RunnableImage<I: Image> {
     ports: Option<Vec<Port>>,
     privileged: bool,
     shm_size: Option<u64>,
+    user: Option<String>,
 }
 
 impl<I: Image> RunnableImage<I> {
@@ -176,11 +177,11 @@ impl<I: Image> RunnableImage<I> {
         &self.container_name
     }
 
-    pub fn env_vars(&self) -> Box<dyn Iterator<Item = (&String, &String)> + '_> {
+    pub fn env_vars(&self) -> Box<dyn Iterator<Item=(&String, &String)> + '_> {
         Box::new(self.image.env_vars().chain(self.env_vars.iter()))
     }
 
-    pub fn volumes(&self) -> Box<dyn Iterator<Item = (&String, &String)> + '_> {
+    pub fn volumes(&self) -> Box<dyn Iterator<Item=(&String, &String)> + '_> {
         Box::new(self.image.volumes().chain(self.volumes.iter()))
     }
 
@@ -195,6 +196,10 @@ impl<I: Image> RunnableImage<I> {
     /// Shared memory size in bytes
     pub fn shm_size(&self) -> Option<u64> {
         self.shm_size
+    }
+
+    pub fn user(&self) -> Option<&str> {
+        self.user.as_ref().map(String::as_str)
     }
 
     pub fn entrypoint(&self) -> Option<String> {
@@ -278,12 +283,19 @@ impl<I: Image> RunnableImage<I> {
             ..self
         }
     }
+
+    pub fn with_user(self, user: impl ToString) -> Self {
+        Self {
+            user: Some(user.to_string()),
+            ..self
+        }
+    }
 }
 
 impl<I> From<I> for RunnableImage<I>
-where
-    I: Image,
-    I::Args: Default,
+    where
+        I: Image,
+        I::Args: Default,
 {
     fn from(image: I) -> Self {
         Self::from((image, I::Args::default()))
@@ -364,7 +376,7 @@ impl WaitFor {
                 length: Duration::from_millis(length),
             })
         })()
-        .unwrap_or(WaitFor::Nothing)
+            .unwrap_or(WaitFor::Nothing)
     }
 }
 

@@ -143,8 +143,13 @@ impl Client {
     fn build_run_command<I: Image>(image: &RunnableImage<I>, mut command: Command) -> Command {
         command.arg("run");
 
+
         if image.privileged() {
             command.arg("--privileged");
+        }
+
+        if let Some(user) = image.user() {
+            command.arg(format!("--user={user}"));
         }
 
         if let Some(bytes) = image.shm_size() {
@@ -223,9 +228,9 @@ impl Client {
     }
 
     fn delete_networks<I, S>(&self, networks: I)
-    where
-        I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
+        where
+            I: IntoIterator<Item=S>,
+            S: AsRef<OsStr>,
     {
         let mut docker = self.command();
         docker.args(["network", "rm"]);
@@ -249,8 +254,8 @@ impl Default for Cli {
 
 impl Cli {
     pub fn new<E>() -> Self
-    where
-        E: GetEnvValue,
+        where
+            E: GetEnvValue,
     {
         Self {
             inner: Arc::new(Client {
@@ -492,11 +497,11 @@ mod tests {
             vec![WaitFor::message_on_stdout("Hello from Docker!")]
         }
 
-        fn env_vars(&self) -> Box<dyn Iterator<Item = (&String, &String)> + '_> {
+        fn env_vars(&self) -> Box<dyn Iterator<Item=(&String, &String)> + '_> {
             Box::new(self.env_vars.iter())
         }
 
-        fn volumes(&self) -> Box<dyn Iterator<Item = (&String, &String)> + '_> {
+        fn volumes(&self) -> Box<dyn Iterator<Item=(&String, &String)> + '_> {
             Box::new(self.volumes.iter())
         }
     }
