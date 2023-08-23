@@ -5,6 +5,7 @@ use crate::{
 use bollard_stubs::models::ContainerInspectResponse;
 
 use std::{fmt, marker::PhantomData, net::IpAddr, str::FromStr};
+use log::log;
 
 /// Represents a running docker container.
 ///
@@ -176,6 +177,8 @@ where
             .inspect(&self.id)
             .network_settings
             .unwrap_or_else(|| panic!("container {} has no network settings", self.id));
+
+        log::debug!("Network setting for {} is {:?}", self.id, settings);
 
         let mut networks = settings
             .networks
