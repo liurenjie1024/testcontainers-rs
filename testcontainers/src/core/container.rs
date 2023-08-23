@@ -184,12 +184,18 @@ where
             .networks
             .unwrap_or_else(|| panic!("container {} has no any networks", self.id));
 
-        let bridge_name = self
+        let mut bridge_name = self
             .image
             .network()
             .clone()
             .or(settings.bridge)
             .unwrap_or("bridge".to_string());
+
+        if bridge_name.trim().is_empty() {
+            bridge_name = "bridge".to_string();
+        }
+
+
 
         log::debug!("Bridge name for {} is {bridge_name}", self.id);
         let ip = networks
